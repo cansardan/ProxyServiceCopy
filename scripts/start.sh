@@ -65,7 +65,7 @@ case "$status" in
         docker cp ${CONFDIR}/httpd.conf ${SERVICE_NAME}-${VERS}:/usr/local/apache2/conf/
 
         # Reload the configuration
-        docker exec -it ${SERVICE_NAME}-${VERS} apachectl -k graceful
+        docker exec ${SERVICE_NAME}-${VERS} apachectl -k graceful
         ;;
     *)
         # Should not happen. Just in case

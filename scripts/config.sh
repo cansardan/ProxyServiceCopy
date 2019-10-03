@@ -41,7 +41,7 @@ else
     " ${CONFDIR}/fox2/services.conf
 fi
 
-docker exec -it ${SERVICE_NAME}-${VERS} apachectl -k graceful
+docker exec ${SERVICE_NAME}-${VERS} apachectl -k graceful
 
 echo -e "$0 successfully finished"
 
