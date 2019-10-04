@@ -82,8 +82,8 @@ fi
 echo -e "\n${SERVICE_NAME} successfully deployed"
 echo -e "The service start and stop scripts are in ${GR}${INSTDIR}/bin${RS} directory\n"
 
-echo -e "${SERVICE_NAME} is not started. Run following command to start the service\n"
-echo -e "${GR}${INSTDIR}/bin/start.sh${RS}\n"
-
+echo -e "${SERVICE_NAME} is not started."
+echo -e "Run ${GR}${INSTDIR}/bin/start.sh or stop.sh${RS} to start/stop the servicen"
 echo -e "Run ${GR}${INSTDIR}/bin/config.sh${RS} to configure routing rules"
+echo -e "Run ${GR}${INSTDIR}/bin/reload.sh${RS} to reload httpd config changes\n"
 
