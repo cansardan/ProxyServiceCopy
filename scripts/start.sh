@@ -59,10 +59,12 @@ case "$status" in
             echo -e "\nIf the image is missing download ${SERVICE_NAME}-${TAG}.sh and redploy the service\n"
             exit 1
         fi
-        docker cp ${SERVICE_NAME}-${VERS}:/usr/local/apache2/conf/httpd.conf ${CONFDIR}/httpd.conf.orig
+        echo "Saving httpd.conf to ${CONFDIR}/httpd.conf.orig"
+        docker cp ${SERVICE_NAME}-${VERS}:/usr/local/apache2/conf/httpd.conf ${CONFDIR}/httpd.conf.orig || exit 1
         /bin/cp ${CONFDIR}/httpd.conf.orig ${CONFDIR}/httpd.conf
         echo "Include conf/fox2/*.conf" >> ${CONFDIR}/httpd.conf
-        docker cp ${CONFDIR}/httpd.conf ${SERVICE_NAME}-${VERS}:/usr/local/apache2/conf/
+        echo "Adding Include conf/fox2/*.conf to httpd.conf"
+        docker cp ${CONFDIR}/httpd.conf ${SERVICE_NAME}-${VERS}:/usr/local/apache2/conf/ || exit 1
 
         # Reload the configuration
         ${SCRIPTDIR}/reload.sh
