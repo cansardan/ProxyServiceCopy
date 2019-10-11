@@ -13,7 +13,6 @@
 #
 
 SCRIPTDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-SVCDIR=$( cd $SCRIPTDIR/.. && pwd )
 
 cd $SCRIPTDIR/..
 
@@ -21,7 +20,9 @@ cd $SCRIPTDIR/..
 # Remote artifactory example: artifactory.clickfox.net:6555/clickfox/services/configservice
 # Local Fox repository example: clickfox/services/configservice
 # Local Fox2 repository example: clickfox/fox2services/configservice
-SERVICE_NAME=${SVCDIR##*/}
+SERVICE_NAME=$(git config --get remote.origin.url)
+SERVICE_NAME=${SERVICE_NAME##*/}
+SERVICE_NAME=${SERVICE_NAME%.git}
 service_name=$(echo ${SERVICE_NAME} | tr '[:upper:]' '[:lower:]')
 # VERSION and BUILD_NUMBER are Jenkins built-in environment variables
 [ -z "$VERSION" ] && VERSION=2.0.0

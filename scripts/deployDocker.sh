@@ -11,7 +11,7 @@ echo -e "\nStarting ${SERVICE_NAME} deployment..."
 # yum install docker-io for CentOS 6.x
 command -v docker > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo "docker is installed"
+    echo "docker is not installed"
     exit 1
 fi
 # should use service command for CentoOS 6.x and systemctl for CentoOS 7.x

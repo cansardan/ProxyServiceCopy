@@ -18,7 +18,9 @@ if [ "$ip" = localhost ]; then
     if [ "$(uname)" != 'Darwin' ]; then
         ip=$(ip route show default | awk '/default/ {print $3}')
     else
-        ip=docker.for.mac.localhost
+        # ip=docker.for.mac.localhost
+        # after 18.03
+        ip=host.docker.internal
     fi   
 fi
 
