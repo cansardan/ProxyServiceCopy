@@ -33,7 +33,6 @@ pipeline {
 		stage('build') {
 			steps {
 				sh 'echo Building ${BRANCH_NAME}...'
-				sh 'mvn -U clean install -Dmaven.test.failure.ignore=false -Dmaven.repo.local=.m2'
 				sh './scripts/makePackage.sh'
 			}
 		}
