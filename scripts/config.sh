@@ -7,7 +7,7 @@
 
 usage() {
     if [ "$#" -ne 4 ]; then
-        echo "Usage: $0 add|del ServiceName ServiceHostIp Path port"
+        echo "Usage: $0 add|del ServiceName ServiceHostIp Path Port"
         echo "  e.g. $0 add ConfigService 192.168.16.229 config 8888"
         exit 1
     fi
@@ -16,8 +16,7 @@ usage() {
 add () {
     # Adding routing rules
     # sed -i doesn't work on Mac
-    savedconf=${CONFDIR}/fox2/services.conf.$(date +"%Y-%m-%d_%H:%M:%S")
-    cp -p ${CONFDIR}/fox2/services.conf $savedconf
+    cp -p ${CONFFILE} $savedconf
     # ProxyPass /config http://192.168.16.229:8888/config/
     grep -q "http://${ip}:${port}/${path}" $savedconf
     if [ $? -eq 0 ]; then
@@ -28,22 +27,28 @@ add () {
         sed "/ProxyPreserveHost On/a\\
 \ \ \ \ ProxyPass \/$path http:\/\/${ip}:${port}\/${path}\/\\
 \ \ \ \ ProxyPassReverse \/$path http:\/\/${ip}:${port}\/${path}\/\\
-           " $savedconf > ${CONFDIR}/fox2/services.conf
+           " $savedconf > ${CONFFILE}
     fi
 }
 
 del () {
-    savedconf=${CONFDIR}/fox2/services.conf.$(date +"%Y-%m-%d_%H:%M:%S")
-    cp -p ${CONFDIR}/fox2/services.conf $savedconf
+    cp -p ${CONFFILE} $savedconf
     grep -q "http://${ip}:${port}/${path}" $savedconf
     if [ $? -eq 0 ]; then
         sed "/ProxyPass \/${path} http:\/\/${ip}:${port}\/${path}\//d;
              /ProxyPassReverse \/${path} http:\/\/${ip}:${port}\/${path}\//d \
-            " $savedconf > ${CONFDIR}/fox2/services.conf
+            " $savedconf > ${CONFFILE}
+    else
+        echo "http://${ip}:${port}/${path} does not exist"
+        exit 0
     fi
 }
 
 svc=$2 ip=$3 path=$4 port=$5
+# remove / at the beginning
+path=${path#/}
+# escape / for sed
+path=${path//\//\\/}
 
 # need to map docker localhost to docker host localhost IP
 if [ "$ip" = localhost ]; then
@@ -74,6 +79,17 @@ else
     CONFDIR=${HOME}/${SERVICE_NAME}_conf
 fi
 
+CONFFILE=${CONFDIR}/fox2/services.conf
+if [ ! -w ${CONFFILE} ]; then
+    echo "Either ${CONFFILE} does not exist or"
+    echo "you do not have permission to write"
+    exit 1
+fi
+savedconf=${CONFFILE}.$(date +"%Y-%m-%d_%H:%M:%S")
+
+if [ $# -ne 5 ]; then
+    usage
+fi
 case "$1" in
     add)
         add
