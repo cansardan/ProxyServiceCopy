@@ -41,12 +41,12 @@ mkdir -p $INSTDIR
 if [ $? -ne 0 ]; then
     echo "It is recommended to install ${SERVICE_NAME} in /clickfox directory"
     echo "You can enter ctl-c to stop the installation and fix above problem or input a different directory"
-    echo "Please input the full directory name without ${SERVICE_NAME}-${TAG}"
+    echo "Please input the full directory name without ${SERVICE_NAME}-${VERS}"
     read -p "e.g. /home/cf ($HOME) : " INSTDIR
     if [ "$INSTDIR" = "" ]; then
         INSTDIR=$HOME
     fi
-    INSTDIR=$INSTDIR/${SERVICE_NAME}-${TAG}
+    INSTDIR=$INSTDIR/${SERVICE_NAME}-${VERS}
     mkdir -p $INSTDIR || exit 1
 fi
 # Configuraiton is based on service not service with versions

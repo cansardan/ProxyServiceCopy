@@ -5,21 +5,55 @@
 # depending on each individual service
 # ConfigService has an example to setup DB properties
 
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 ServiceName ServiceHostIp Path port"
-    echo "  e.g. $0 ConfigService 192.168.16.229 config 8888"
-    exit
-fi
+usage() {
+    if [ "$#" -ne 4 ]; then
+        echo "Usage: $0 add|del ServiceName ServiceHostIp Path port"
+        echo "  e.g. $0 add ConfigService 192.168.16.229 config 8888"
+        exit 1
+    fi
+}
 
-svc=$1 ip=$2 path=$3 port=$4
+add () {
+    # Adding routing rules
+    # sed -i doesn't work on Mac
+    savedconf=${CONFDIR}/fox2/services.conf.$(date +"%Y-%m-%d_%H:%M:%S")
+    cp -p ${CONFDIR}/fox2/services.conf $savedconf
+    # ProxyPass /config http://192.168.16.229:8888/config/
+    grep -q "http://${ip}:${port}/${path}" $savedconf
+    if [ $? -eq 0 ]; then
+        echo "http://${ip}:${port}/${path} already configured"
+        exit 0
+    else
+        # escaple space to make it work for both Linux and Mac
+        sed "/ProxyPreserveHost On/a\\
+\ \ \ \ ProxyPass \/$path http:\/\/${ip}:${port}\/${path}\/\\
+\ \ \ \ ProxyPassReverse \/$path http:\/\/${ip}:${port}\/${path}\/\\
+           " $savedconf > ${CONFDIR}/fox2/services.conf
+    fi
+}
+
+del () {
+    savedconf=${CONFDIR}/fox2/services.conf.$(date +"%Y-%m-%d_%H:%M:%S")
+    cp -p ${CONFDIR}/fox2/services.conf $savedconf
+    grep -q "http://${ip}:${port}/${path}" $savedconf
+    if [ $? -eq 0 ]; then
+        sed "/ProxyPass \/${path} http:\/\/${ip}:${port}\/${path}\//d;
+             /ProxyPassReverse \/${path} http:\/\/${ip}:${port}\/${path}\//d \
+            " $savedconf > ${CONFDIR}/fox2/services.conf
+    fi
+}
+
+svc=$2 ip=$3 path=$4 port=$5
 
 # need to map docker localhost to docker host localhost IP
 if [ "$ip" = localhost ]; then
     if [ "$(uname)" != 'Darwin' ]; then
-        ip=$(ip route show default | awk '/default/ {print $3}')
+        ip=$(ip addr show docker0 | awk '/inet / {print $2}')
+        ip=${ip%/*}
     else
-        # ip=docker.for.mac.localhost
-        # after 18.03
+        # Docker for Mac v 17.12 to v 18.02
+        # ip=docker.for.mac.host.internal
+        # Docker v 18.03 and above
         ip=host.docker.internal
     fi   
 fi
@@ -40,23 +74,16 @@ else
     CONFDIR=${HOME}/${SERVICE_NAME}_conf
 fi
 
-# Adding routing rules
-# sed -i doesn't work on Mac
-savedconf=${CONFDIR}/fox2/services.conf.$(date +"%Y-%m-%d_%H:%M:%S")
-cp -p ${CONFDIR}/fox2/services.conf $savedconf
-grep -q "/$ip:" $savedconf
-if [ $? -eq 0 ]; then
-    sed "/ProxyPass .*http:\/\/${ip}:/s/.*/    ProxyPass \/$path http:\/\/${ip}:${port}\/config\//;
-         /ProxyPassReverse.*http:\/\/${ip}:/s/.*/    ProxyPassReverse \/$path http:\/\/${ip}:${port}\/config\// \
-        " $savedconf > ${CONFDIR}/fox2/services.conf
-else
-    # escaple space to make it work for both Linux and Mac
-    sed "/ProxyPreserveHost On/a\\
-\ \ \ \ ProxyPass \/$path http:\/\/${ip}:${port}\/config\/\\
-\ \ \ \ ProxyPassReverse \/$path http:\/\/${ip}:${port}\/config\/\\
-\\
-       " $savedconf > ${CONFDIR}/fox2/services.conf
-fi
+case "$1" in
+    add)
+        add
+        ;;
+    del)
+        del
+        ;;
+    *)
+        usage 
+esac
 
 ${SCRIPTDIR}/reload.sh
 
