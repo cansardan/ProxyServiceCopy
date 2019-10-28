@@ -25,8 +25,8 @@ add () {
     else
         # escaple space to make it work for both Linux and Mac
         sed "/ProxyPreserveHost On/a\\
-\ \ \ \ ProxyPass \/$path http:\/\/${ip}:${port}\/${path}\/\\
-\ \ \ \ ProxyPassReverse \/$path http:\/\/${ip}:${port}\/${path}\/\\
+\ \ \ \ ProxyPass \/$path http:\/\/${ip}:${port}\/${path}\\
+\ \ \ \ ProxyPassReverse \/$path http:\/\/${ip}:${port}\/${path}\\
            " $savedconf > ${CONFFILE}
     fi
 }
@@ -35,8 +35,8 @@ del () {
     cp -p ${CONFFILE} $savedconf
     grep -q "http://${ip}:${port}/${path}" $savedconf
     if [ $? -eq 0 ]; then
-        sed "/ProxyPass \/${path} http:\/\/${ip}:${port}\/${path}\//d;
-             /ProxyPassReverse \/${path} http:\/\/${ip}:${port}\/${path}\//d \
+        sed "/ProxyPass \/${path} http:\/\/${ip}:${port}\/${path}/d;
+             /ProxyPassReverse \/${path} http:\/\/${ip}:${port}\/${path}/d \
             " $savedconf > ${CONFFILE}
     else
         echo "http://${ip}:${port}/${path} does not exist"
