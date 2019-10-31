@@ -5,6 +5,10 @@
 # depending on each individual service
 # ConfigService has an example to setup DB properties
 
+# TODO: Why are many sockets in CLOSE_WAIT with mod_proxy on httpd?
+# https://access.redhat.com/solutions/457673
+# We may need to tune keepalive duration on httpd
+
 usage() {
     if [ "$#" -ne 4 ]; then
         echo "Usage: $0 add|del ServiceName ServiceHostIp Path Port"

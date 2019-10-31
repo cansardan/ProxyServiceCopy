@@ -35,7 +35,7 @@ REPO_NAME=httpd
 TAG=2.4-alpine
 PORT=80
 
-/bin/rm -rf target/dockerPkg
+/bin/rm -rf target/
 mkdir -p target/dockerPkg/bin
 
 # check if docker is up and running
@@ -58,11 +58,10 @@ fi
 docker images ${REPO_NAME}:${TAG} 2>/dev/null | grep -q "${TAG}"
 if [ $? -ne 0 ]; then
     echo "${REPO_NAME}:${TAG} image is not found in local registry"
-    echo "Try to pull from artifactory..."
+    echo "Try to pull from Docker Hub..."
     docker pull ${REPO_NAME}:${TAG}
     if [ $? -ne 0 ]; then
-        echo "${REPO_NAME}:${TAG} image is not found in artifactory"
-        echo "Please run \"mvn clean install\" to build the docker image" 
+        echo "${REPO_NAME}:${TAG} image is not found in Docker Hub"
         exit 1
     fi
 fi
