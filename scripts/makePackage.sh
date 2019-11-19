@@ -50,7 +50,7 @@ command -v makeself > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "makeself is required but not installed"
     echo "Please run \"brew install makeself\" on Mac"
-    echo "or \"sudo yum install makeself\" on Linux to install makeself"
+    echo "or for Linux clone makeself into your path with a symlink between makeself => makeself.sh: https://github.com/megastep/makeself"
     exit 1
 fi
 

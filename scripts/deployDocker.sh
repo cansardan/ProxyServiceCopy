@@ -36,7 +36,10 @@ if [ $? -eq 0 ]; then
 fi
 
 # setup installation and configuration directories
-INSTDIR=/clickfox/${SERVICE_NAME}-${VERS}
+# The following variable finds the location in which the self-extracting file is located by
+#  changing directories, and then printing the realpath it was invoked under
+MKSELF_LOCATION=$(cd ${USER_PWD} && dirname $(realpath $(ps -o args= $PPID | awk '{print $2}')))
+INSTDIR=${MKSELF_LOCATION}/${SERVICE_NAME}-${VERS}
 mkdir -p $INSTDIR
 if [ $? -ne 0 ]; then
     echo "It is recommended to install ${SERVICE_NAME} in /clickfox directory"
