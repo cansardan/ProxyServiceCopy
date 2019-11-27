@@ -25,7 +25,7 @@ SERVICE_NAME=${SERVICE_NAME##*/}
 SERVICE_NAME=${SERVICE_NAME%.git}
 service_name=$(echo ${SERVICE_NAME} | tr '[:upper:]' '[:lower:]')
 # VERSION and BUILD_NUMBER are Jenkins built-in environment variables
-[ -z "$VERSION" ] && VERSION=2.0.0
+[ -z "$VERSION" ] && VERSION=2.1.0
 [ -z "$BUILD_NUMBER" ] && BUILD_NUMBER=latest
 # ProxyService version
 VERS=${VERSION}-${BUILD_NUMBER}
