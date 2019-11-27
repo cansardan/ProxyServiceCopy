@@ -64,6 +64,7 @@ case "$status" in
         /bin/cp ${CONFDIR}/httpd.conf.orig ${CONFDIR}/httpd.conf
         echo "Include conf/fox2/*.conf" >> ${CONFDIR}/httpd.conf
         echo "Adding Include conf/fox2/*.conf to httpd.conf"
+	sed -i 's/LogFormat "%h %l %u %t \\"%r\\" %>s %b" common/LogFormat "%h %l %u %t %{ms}T \\"%r\\" %>s %b" common/g' ${CONFDIR}/httpd.conf
         docker cp ${CONFDIR}/httpd.conf ${SERVICE_NAME}-${VERS}:/usr/local/apache2/conf/ || exit 1
 
         # Reload the configuration
