@@ -24,9 +24,33 @@ SERVICE_NAME=$(git config --get remote.origin.url)
 SERVICE_NAME=${SERVICE_NAME##*/}
 SERVICE_NAME=${SERVICE_NAME%.git}
 service_name=$(echo ${SERVICE_NAME} | tr '[:upper:]' '[:lower:]')
+
+# setup default VERSION and BUILD_NUMBER
 # VERSION and BUILD_NUMBER are Jenkins built-in environment variables
-[ -z "$VERSION" ] && VERSION=2.1.0
+# Get maven project version
+if [ -z "$VERSION" ]; then
+    VERSION=$(grep '"version":' version.json | awk '{print $NF}' | sed 's/[",]//g')
+fi
+
+# Try to determine the branch by checking hte git reference. If unable to, check BRANCH_NAME env var
+branch=`git symbolic-ref -q HEAD`
+branch=${branch##refs/heads/}
+if [[ -z ${branch} ]]; then
+    if [[ -z ${BRANCH_NAME} ]]; then
+        echo "ERROR: Unable to determine branch. If using detached git HEAD, ensure $$BRANCH_NAME is set"
+        exit 1
+    else
+        branch=${BRANCH_NAME}
+    fi
+fi
+
+if [ "$branch" != "master" ]; then
+    VERSION="${VERSION}-${branch}"
+fi
+
+# VERSION and BUILD_NUMBER are Jenkins built-in environment variables
 [ -z "$BUILD_NUMBER" ] && BUILD_NUMBER=latest
+
 # ProxyService version
 VERS=${VERSION}-${BUILD_NUMBER}
 # Get httpd from Docker Hub
