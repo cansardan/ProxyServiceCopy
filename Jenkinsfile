@@ -10,6 +10,10 @@ pipeline {
 	environment {
 		ARTIFACTORY_ID = '1338225831@1414737651573'
 		SLACK_CHANNEL = 'builds'
+		// CD_HOSTS can be a '&' delimited series of hostnames for which deployments should be triggered (environment section doesn't support arrays), e.g.
+		// CD_HOSTS = '192.168.16.156 - Hood Host&192.168.16.191 - qa-dolphin-master-1 - Paired with atx-cdh-3, atx-qa-cdh-4 and atx-qa-cdh-9 (Multi-tenant)'
+		CD_HOSTS = '192.168.16.191 - qa-dolphin-master-1 - Paired with atx-cdh-3, atx-qa-cdh-4 and atx-qa-cdh-9 (Multi-tenant)'
+		SERVICE_NAME = 'ProxyService'
 	}
 	agent {
 		label 'docker-builder'
@@ -55,6 +59,15 @@ pipeline {
 			rtPublishBuildInfo(
 					serverId: "${ARTIFACTORY_ID}"
 					)
+			script {
+				if (env.BRANCH_NAME == 'master') {
+					// If master branch, run a deployment job for each dolphin host listed in CD_HOSTS
+					CD_HOSTS.tokenize('&').each {
+						echo "Deploying master branch to '${it}'"
+						build job: 'deployDolphin', wait: false, parameters: [[$class: 'StringParameterValue', name: SERVICE_NAME, value: 'origin/master'], [$class: 'StringParameterValue', name: 'Host', value: it]]
+					}
+				}
+			}
 		}
 		fixed {
 			// Send slack message if builds are now good
