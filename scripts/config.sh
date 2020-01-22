@@ -11,8 +11,15 @@
 
 usage() {
     if [ "$#" -ne 4 ]; then
-        echo "Usage: $0 add|del ServiceName ServiceHostIp Path Port"
-        echo "  e.g. $0 add ConfigService 192.168.16.229 config 8888"
+        echo "Usage: $0 add|del ServiceHostIp ServiceName Port"
+        echo "       NOTE:  The path is now the service name:"
+        echo "              ex: engine, journey-explorer, auth,"
+        echo "                  config, explore, etc."
+        echo "  e.g. $0 add 192.168.16.229 config 8888"
+	echo
+	echo "To migrate an old config (pre 2.x) to 3.x, use the"
+	echo "migrate option."
+	echo "ex: $0 migrate"
         exit 1
     fi
 }
@@ -21,38 +28,77 @@ add () {
     # Adding routing rules
     # sed -i doesn't work on Mac
     cp -p ${CONFFILE} $savedconf
-    # ProxyPass /config http://192.168.16.229:8888/config/
-    grep -q "http://${ip}:${port}/${path}" $savedconf
+    # BalancerMember http://10.101.1.89:7500
+
+    # Verify the service exists
+    grep -q "Proxy balancer:\/\/${service}\>" ${savedconf}
+    if [ $? -gt 0 ]; then
+        echo "Service ${service} does NOT exist!"
+        exit 1
+    fi
+
+    # Check to see if this ip/port is already configured
+    grep -q "http://${ip}:${port}" $savedconf
     if [ $? -eq 0 ]; then
-        echo "http://${ip}:${port}/${path} already configured"
+        echo "http://${ip}:${port} already configured"
         exit 0
     else
-        # escaple space to make it work for both Linux and Mac
-        sed "/ProxyPreserveHost On/a\\
-\ \ \ \ ProxyPass \/$path http:\/\/${ip}:${port}\/${path}\\
-\ \ \ \ ProxyPassReverse \/$path http:\/\/${ip}:${port}\/${path}\\
-           " $savedconf > ${CONFFILE}
+        # escape space to make it work for both Linux and Mac
+        sed "/Proxy balancer\:\/\/${service}\>/a\\
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BalancerMember http:\/\/${ip}:${port}" \
+            $savedconf > ${CONFFILE}
     fi
 }
 
 del () {
     cp -p ${CONFFILE} $savedconf
-    grep -q "http://${ip}:${port}/${path}" $savedconf
+    grep -q "http://${ip}:${port}" $savedconf
     if [ $? -eq 0 ]; then
-        sed "/ProxyPass \/${path} http:\/\/${ip}:${port}\/${path}/d;
-             /ProxyPassReverse \/${path} http:\/\/${ip}:${port}\/${path}/d \
-            " $savedconf > ${CONFFILE}
+        sed "/BalancerMember http:\/\/${ip}:${port}/d" \
+             $savedconf > ${CONFFILE}
     else
-        echo "http://${ip}:${port}/${path} does not exist"
+        echo "http://${ip}:${port} does not exist"
         exit 0
     fi
 }
 
-svc=$2 ip=$3 path=$4 port=$5
-# remove / at the beginning
-path=${path#/}
-# escape / for sed
-path=${path//\//\\/}
+migrate () {
+    # Check to see if the current services.conf is version 2 or 3
+    count=$(cat ${CONFDIR}/fox2/services.conf | grep "Proxy balancer" | wc -l)
+    if [ $count -gt 0 ]; then
+        echo "Your services.conf appears to be up-to-date.  If you wish to"
+	echo "re-run the migration, rename the services.conf.OLD file back"
+	echo "to services.conf (in your ProxyService_conf/fox2 directory)"
+	echo "and then re-run this script with the migrate option."
+	exit
+    fi
+
+    echo
+    echo "Backing up the old configuration to ${CONFDIR}/fox2/services.conf.OLD."
+    /bin/mv ${CONFDIR}/fox2/services.conf ${CONFDIR}/fox2/services.conf.OLD
+    /bin/cp ${CONFDIR}/fox2/services.conf.tmpl ${CONFDIR}/fox2/services.conf
+
+    regex="ProxyPassReverse.*http://([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]{1,6})\/fox2\/([a-z]+)"
+    while read line
+    do
+        if [[ ${line} =~ ${regex} ]]; then
+            ip=${BASH_REMATCH[1]}
+            port=${BASH_REMATCH[2]}
+            service=${BASH_REMATCH[3]}
+            echo "Adding ip=${ip} port=${port} service=${service}"
+	    add
+        fi
+    done < ${CONFDIR}/fox2/services.conf.OLD
+
+    echo "Your services.conf has been upgraded."
+
+    ${SCRIPTDIR}/reload.sh
+
+    exit
+}
+
+# Gather parameters
+ip=$2 service=$3 port=$4
 
 # need to map docker localhost to docker host localhost IP
 if [ "$ip" = localhost ]; then
@@ -78,9 +124,9 @@ cd ${SCRIPTDIR}/../..
 # For Mac by default only files in /Users/, /Volumes/, /private/, and /tmp
 # can be shared directly using -v bind mount.
 if [ "$(uname)" != 'Darwin' ]; then
-    CONFDIR=$(pwd)/${SERVICE_NAME}_conf
+    CONFDIR=$(pwd)/ProxyService_conf
 else
-    CONFDIR=${HOME}/${SERVICE_NAME}_conf
+    CONFDIR=${HOME}/ProxyService_conf
 fi
 
 CONFFILE=${CONFDIR}/fox2/services.conf
@@ -91,9 +137,12 @@ if [ ! -w ${CONFFILE} ]; then
 fi
 savedconf=${CONFFILE}.$(date +"%Y-%m-%d_%H:%M:%S")
 
-if [ $# -ne 5 ]; then
+if [ $# -eq 1 ] && [ "$1" == "migrate" ]; then
+    migrate
+elif [ $# -ne 4 ]; then
     usage
 fi
+
 case "$1" in
     add)
         add

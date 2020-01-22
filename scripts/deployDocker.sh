@@ -77,7 +77,9 @@ chmod 755 ${INSTDIR}
 chmod -R 755 ${INSTDIR}/bin
 chmod 755 ${CONFDIR}/
 
+# Auto-migrate the services.conf file if needed
 /bin/cp -nr conf/* ${CONFDIR}/
+${INSTDIR}/bin/config.sh migrate
 
 echo "Loading docker image..."
 docker load --input ${SERVICE_NAME}DockerImg.tar
