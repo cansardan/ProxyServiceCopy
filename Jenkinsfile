@@ -35,6 +35,7 @@ pipeline {
 						deleteBuildArtifacts: true
 						)
 				script {
+					// Since this version is not being set in the environmental variables, it's not the version available to "makePackage.sh"
 					VERSION = "${VERSION}-${BRANCH_NAME}"
 				}
 			}
