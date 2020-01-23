@@ -15,7 +15,7 @@ pipeline {
 		CD_HOSTS = '192.168.16.191 - qa-dolphin-master-1 - Paired with atx-cdh-3, atx-qa-cdh-4 and atx-qa-cdh-9 (Multi-tenant)'
 		SERVICE_NAME = 'ProxyService'
 		// Initial version can be set here, but final version must include branch information
-		VERSION = sh(returnStdout: true, script: "grep '\"version\":' package.json | awk '{print \$NF}' | sed 's/[\",]//g'").trim()
+		VERSION = sh(returnStdout: true, script: "grep '\"version\":' version.json | awk '{print \$NF}' | sed 's/[\",]//g'").trim()
 	}
 	agent {
 		label 'docker-builder'
