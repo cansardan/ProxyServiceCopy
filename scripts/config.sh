@@ -78,7 +78,7 @@ migrate () {
     /bin/mv ${CONFDIR}/fox2/services.conf ${CONFDIR}/fox2/services.conf.OLD
     /bin/cp ${CONFDIR}/fox2/services.conf.tmpl ${CONFDIR}/fox2/services.conf
 
-    regex="ProxyPassReverse.*http://([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}):([0-9]{1,6})\/fox2\/([a-z]+)"
+    regex="ProxyPassReverse.*http://(.*):([0-9]{1,5})/fox2/(.*)"
     while read line
     do
         if [[ ${line} =~ ${regex} ]]; then
@@ -98,7 +98,7 @@ migrate () {
 }
 
 # Gather parameters
-ip=$2 service=$3 port=$4
+service=$2 ip=$3 port=$4
 
 # need to map docker localhost to docker host localhost IP
 if [ "$ip" = localhost ]; then
