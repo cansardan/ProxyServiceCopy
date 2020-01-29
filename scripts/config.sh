@@ -11,11 +11,11 @@
 
 usage() {
     if [ "$#" -ne 4 ]; then
-        echo "Usage: $0 add|del ServiceHostIp ServiceName Port"
+        echo "Usage: $0 add|del ServiceName ServiceHost/IP Port"
         echo "       NOTE:  The path is now the service name:"
         echo "              ex: engine, journey-explorer, auth,"
         echo "                  config, explore, etc."
-        echo "  e.g. $0 add 192.168.16.229 config 8888"
+        echo "  e.g. $0 add ripAlbum 192.168.16.229 8888"
 	echo
 	echo "To migrate an old config (pre 2.x) to 3.x, use the"
 	echo "migrate option."
