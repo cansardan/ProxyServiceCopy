@@ -14,6 +14,8 @@ pipeline {
 		// CD_HOSTS = '192.168.16.156 - Hood Host&192.168.16.191 - qa-dolphin-master-1 - Paired with atx-cdh-3, atx-qa-cdh-4 and atx-qa-cdh-9 (Multi-tenant)'
 		CD_HOSTS = '192.168.16.191 - qa-dolphin-master-1 - Paired with atx-cdh-3, atx-qa-cdh-4 and atx-qa-cdh-9 (Multi-tenant)'
 		SERVICE_NAME = 'ProxyService'
+		// Initial version can be set here, but final version must include branch information
+		VERSION = sh(returnStdout: true, script: "grep '\"version\":' version.json | awk '{print \$NF}' | sed 's/[\",]//g'").trim()
 	}
 	agent {
 		label 'docker-builder'
@@ -32,12 +34,21 @@ pipeline {
 						maxBuilds: 1,
 						deleteBuildArtifacts: true
 						)
+				script {
+					// Since this version is not being set in the environmental variables, it's not the version available to "makePackage.sh"
+					VERSION = "${VERSION}-${BRANCH_NAME}"
+				}
 			}
 		}
 		stage('build') {
 			steps {
 				sh 'echo Building ${BRANCH_NAME}...'
 				sh './scripts/makePackage.sh'
+				script {
+					// Can't use a separate environment variable for the tags, since Jenkins doesn't define empty string variables
+					// Have to set properties here, since the VERSION isn't known until after branch-tasks have run
+					ARTIFACT_PROPS = "branch=${BRANCH_NAME};service=${SERVICE_NAME};version=${VERSION};${sh(returnStdout: true, script: "git tag --contains | sed 's/^/tags=/' | tr '\n' ';'").trim()}"
+				}
 			}
 		}
 	}
@@ -50,6 +61,7 @@ pipeline {
 					"""{
 					"files": [{
 					"pattern": "target/*.sh",
+					"props": "${ARTIFACT_PROPS}",
 					"target": "fox-tars-local/com/clickfox-services/",
 					"recursive": "false"
 					}]

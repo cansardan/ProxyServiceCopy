@@ -38,8 +38,8 @@ The configuration directory ProxyService_conf is one level above the installatio
 Change the working directory to the installation directory and run followin script to configure the ProxyService
 ```sh
 $ ./bin/config.sh
-Usage: ./bin/config.sh add|del ServiceName ServiceHostIp Path Port
-  e.g. ./bin/config.sh add ConfigService 192.168.16.229 config 8888
+Usage: ./bin/config.sh add|del ServiceName ServiceHostIp Port
+  e.g. ./bin/config.sh add config 192.168.16.229 8888
 ```
 ## How to branch, modify, and update the ProxyService and its version
 1) Branch the ProxyService project. This is a safe operation since the makePackage.sh will automatically append the branch name to the ProxyService .sh file even if it does a build on your branch. 
