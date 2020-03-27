@@ -76,17 +76,6 @@ migrate () {
         mv ${CONFFILE} $savedconf
         cat $savedconf | sed "s/\(.*\)\/$/\1/" > ${CONFFILE}
 
-	# FD-2655 - Remove any trailing /'s from ProxyPass and ReverseProxyPass
-        cp -p ${CONFFILE} $savedconf
-	regex="\(.*ProxyPass.*\)\/$/\1/"
-        while read line
-        do
-            if [[ ${line} =~ ${regex} ]]; then
-                line=$(echo $line | sed "s/\(.*ProxyPass.*\)/\/$/\1/")
-            fi
-	    echo "${line}" >> ${CONFFILE}
-        done < $savedconf
-
 	exit
     fi
 
