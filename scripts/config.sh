@@ -70,6 +70,23 @@ migrate () {
 	echo "re-run the migration, rename the services.conf.OLD file back"
 	echo "to services.conf (in your ProxyService_conf/fox2 directory)"
 	echo "and then re-run this script with the migrate option."
+
+        # FD-2655 - Remove any trailing /'s from ProxyPass and ReverseProxyPass
+	#           (There should be NO trailing slashes in this file.)
+        mv ${CONFFILE} $savedconf
+        cat $savedconf | sed "s/\(.*\)\/$/\1/" > ${CONFFILE}
+
+	# FD-2655 - Remove any trailing /'s from ProxyPass and ReverseProxyPass
+        cp -p ${CONFFILE} $savedconf
+	regex="\(.*ProxyPass.*\)\/$/\1/"
+        while read line
+        do
+            if [[ ${line} =~ ${regex} ]]; then
+                line=$(echo $line | sed "s/\(.*ProxyPass.*\)/\/$/\1/")
+            fi
+	    echo "${line}" >> ${CONFFILE}
+        done < $savedconf
+
 	exit
     fi
 

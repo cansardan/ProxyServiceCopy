@@ -79,6 +79,8 @@ chmod 755 ${CONFDIR}/
 
 # Auto-migrate the services.conf file if needed
 /bin/cp -nr conf/* ${CONFDIR}/
+# Force the copy of the services.conf.tmpl file (it may have changed)
+/bin/cp -f conf/services.conf.tmpl ${CONFDIR}/
 ${INSTDIR}/bin/config.sh migrate
 
 echo "Loading docker image..."
