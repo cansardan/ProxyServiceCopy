@@ -80,8 +80,7 @@ chmod 755 ${CONFDIR}/
 # Auto-migrate the services.conf file if needed
 /bin/cp -nr conf/* ${CONFDIR}/
 # Force the copy of the services.conf.tmpl file (it may have changed)
-echo "/bin/cp -f conf/fox2/services.conf.tmpl ${CONFDIR}/."
-/bin/cp -f conf/fox2/services.conf.tmpl ${CONFDIR}/.
+/bin/cp -f conf/fox2/services.conf.tmpl ${CONFDIR}/fox2/.
 ${INSTDIR}/bin/config.sh migrate
 
 echo "Loading docker image..."
