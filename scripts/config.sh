@@ -12,7 +12,7 @@
 
 usage() {
     if [ "$#" -ne 4 ]; then
-        echo "usage: $0 add|del servicename servicehost/ip port"
+        echo "usage: $0 add|del servicename servicehost/IP port"
         echo "       note:  the path is now the service name:"
         echo "              ex: engine, journey-explorer, auth,"
         echo "                  config, explore, etc."
