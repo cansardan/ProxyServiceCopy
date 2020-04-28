@@ -4,6 +4,7 @@
 # the service deployment or/and start.sh during startup
 # depending on each individual service
 # ConfigService has an example to setup DB properties
+# DO NOT EDIT YOUR services.conf file by hand, use this script ONLY!
 
 # TODO: Why are many sockets in CLOSE_WAIT with mod_proxy on httpd?
 # https://access.redhat.com/solutions/457673
@@ -11,8 +12,8 @@
 
 usage() {
     if [ "$#" -ne 4 ]; then
-        echo "Usage: $0 add|del ServiceName ServiceHost/IP Port"
-        echo "       NOTE:  The path is now the service name:"
+        echo "usage: $0 add|del servicename servicehost/ip port"
+        echo "       note:  the path is now the service name:"
         echo "              ex: engine, journey-explorer, auth,"
         echo "                  config, explore, etc."
         echo "  e.g. $0 add ripAlbum 192.168.16.229 8888"
@@ -30,26 +31,55 @@ add () {
     cp -p ${CONFFILE} $savedconf
     # BalancerMember http://10.101.1.89:7500
 
-    # Verify the service exists
+    # Verify the service exists in the migrated services.conf
+    # if so then service existed at time of migration and 
+    # entry exists in file, but not configured
     grep -q "Proxy balancer:\/\/${service}\>" ${savedconf}
     if [ $? -gt 0 ]; then
-        echo "Service ${service} does NOT exist!"
-        exit 1
-    fi
-
-    # Check to see if this ip/port is already configured
-    grep -q "http://${ip}:${port}" $savedconf
-    if [ $? -eq 0 ]; then
-        echo "http://${ip}:${port} already configured"
-        exit 0
+        echo "${service} does not exist, Adding"
+        addNewService > ${CONFFILE}
     else
-        # escape space to make it work for both Linux and Mac
-        sed "/Proxy balancer\:\/\/${service}\>/a\\
-\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BalancerMember http:\/\/${ip}:${port}" \
-            $savedconf > ${CONFFILE}
+
+        # Check to see if this ip/port is already configured
+        grep -q "http://${ip}:${port}" $savedconf
+        if [ $? -eq 0 ]; then
+            echo "http://${ip}:${port} already configured"
+            exit 0
+        else
+            # escape space to make it work for both Linux and Mac
+            sed "/Proxy balancer\:\/\/${service}\>/a\\
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BalancerMember http:\/\/${ip}:${port}\n" \
+                $savedconf > ${CONFFILE}
+        fi
     fi
 }
+addNewService(){
+    #add new balancer and Proxy entries for service.
+    regex1="ProxyPass.*"
+    regex2="</VirtualHost>.*"
+    regex=$regex1
+    balancerLine="\t<Proxy balancer://${service}> \n\t\tBalancerMember http://${ip}:${port}\n\t\tRequire all granted\n\t\tProxySet lbmethod=byrequests\n\t</Proxy>\n"
+    proxyLine="\tProxyPass /fox2/${service} balancer://${service}/fox2/${service}\n\tProxyPassReverse /fox2/${service} balancer://${service}/fox2/${service}\n"
 
+    IFS=''
+    while read line
+        do
+            if ! [[ ${line} =~ $regex ]]; then
+                echo -e "${line}"
+            else 
+               if [[ $regex =~ $regex1 ]]; then
+                   echo -e "${balancerLine}"
+                   echo -e "${line}"
+
+                   #chg regex to look for second entry point
+                   regex=$regex2
+                elif [[ $regex =~ $regex2 ]]; then
+                    echo -e "${proxyLine}"
+                    echo "${line}"
+            fi
+        fi
+        done < $savedconf
+}
 del () {
     cp -p ${CONFFILE} $savedconf
     grep -q "http://${ip}:${port}" $savedconf
