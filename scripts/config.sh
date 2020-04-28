@@ -47,8 +47,8 @@ add () {
             exit 0
         else
             # escape space to make it work for both Linux and Mac
-            sed "/Proxy balancer\:\/\/${service}\>/a\\
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ BalancerMember http:\/\/${ip}:${port}\n" \
+            sed -e "s/Proxy balancer\:\/\/${service}\>/Proxy balancer\:\/\/${service}\>\\
+                BalancerMember http:\/\/${ip}:${port}/" \
                 $savedconf > ${CONFFILE}
         fi
     fi
@@ -58,8 +58,8 @@ addNewService(){
     regex1="ProxyPass.*"
     regex2="</VirtualHost>.*"
     regex=$regex1
-    balancerLine="\t<Proxy balancer://${service}> \n\t\tBalancerMember http://${ip}:${port}\n\t\tRequire all granted\n\t\tProxySet lbmethod=byrequests\n\t</Proxy>\n"
-    proxyLine="\tProxyPass /fox2/${service} balancer://${service}/fox2/${service}\n\tProxyPassReverse /fox2/${service} balancer://${service}/fox2/${service}\n"
+    balancerLine="         <Proxy balancer://${service}> \n\t\tBalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests\n\t</Proxy>\n"
+    proxyLine="        ProxyPass /fox2/${service} balancer://${service}/fox2/${service}\n        ProxyPassReverse /fox2/${service} balancer://${service}/fox2/${service}\n"
 
     IFS=''
     while read line
