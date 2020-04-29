@@ -17,7 +17,7 @@ usage() {
         echo "              ex: engine, journey-explorer, auth,"
         echo "                  config, explore, sse, etc."
         echo "  e.g. $0 add ripAlbum 192.168.16.229 8888"
-        echo "       use localhost for servicehost locally"
+        echo "       use localhost for servicehost local PC"
 	echo
 	echo "To migrate an old config (pre 2.x) to 3.x, use the"
 	echo "migrate option."
@@ -59,7 +59,7 @@ addNewService(){
     regex1="ProxyPass.*"
     regex2="</VirtualHost>.*"
     regex=$regex1
-    balancerLine="         <Proxy balancer://${service}> \n\t\tBalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests\n\t</Proxy>\n"
+    balancerLine="         <Proxy balancer://${service}>\n                BalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests\n\t</Proxy>\n"
     proxyLine="        ProxyPass /fox2/${service} balancer://${service}/fox2/${service}\n        ProxyPassReverse /fox2/${service} balancer://${service}/fox2/${service}\n"
 
     IFS=''
