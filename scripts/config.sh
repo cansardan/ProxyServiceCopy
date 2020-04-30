@@ -37,8 +37,16 @@ add () {
     # entry exists in file, but not configured
     grep -q "Proxy balancer:\/\/${service}\>" ${savedconf}
     if [ $? -gt 0 ]; then
-        echo "${service} does not exist, Adding"
-        addNewService > ${CONFFILE}
+        read -p "${service} not exist,Are you sure you want to add[Yy|Nn]? " -n 1 -r
+        echo    # (optional) move to a new line
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            echo "Adding..."
+            addNewService > ${CONFFILE}
+        else
+            echo "Not Adding..."
+            exit 0    
+        fi
+        
     else
 
         # Check to see if this ip/port is already configured
