@@ -56,9 +56,13 @@ add () {
             exit 0
         else
             # escape space to make it work for both Linux and Mac
-            sed -e "s/Proxy balancer\:\/\/${service}\>/Proxy balancer\:\/\/${service}\>\\
-                BalancerMember http:\/\/${ip}:${port}/" \
+            # sed -e "s/Proxy balancer\:\/\/${service}\>/Proxy balancer\:\/\/${service}\>\\
+            #     BalancerMember http:\/\/${ip}:${port}/" \
+            #     $savedconf > ${CONFFILE}
+             sed -e "s|Proxy balancer://${service}>|Proxy balancer://${service}>\\
+                BalancerMember http://${ip}:${port}|" \
                 $savedconf > ${CONFFILE}
+
         fi
     fi
 }
