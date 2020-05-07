@@ -54,11 +54,6 @@ ErrorLog "logs/error_log"
                 ProxySet lbmethod=byrequests
         </Proxy>
 
-        <Proxy balancer://pubapi>
-                Require all granted
-                ProxySet lbmethod=byrequests
-        </Proxy>
-
         ProxyPass /fox2/engine balancer://engine/fox2/engine
         ProxyPassReverse /fox2/engine balancer://engine/fox2/engine
 
@@ -82,8 +77,5 @@ ErrorLog "logs/error_log"
 
         ProxyPass /fox2/sse balancer://sse/fox2/sse
         ProxyPassReverse /fox2/sse balancer://sse/fox2/sse
-
-        ProxyPass /fox2/pubapi balancer://sse/fox2/pubapi
-        ProxyPassReverse /fox2/pubapi balancer://pubapi/fox2/pubapi
 
 </VirtualHost>
