@@ -74,10 +74,10 @@ pipeline {
 			script {
 				if (env.BRANCH_NAME == 'master') {
 					// If master branch, run a deployment job for each dolphin host listed in CD_HOSTS
-					CD_HOSTS.tokenize('&').each {
+					/*CD_HOSTS.tokenize('&').each {
 						echo "Deploying master branch to '${it}'"
 						build job: 'deployDolphin', wait: false, parameters: [[$class: 'StringParameterValue', name: SERVICE_NAME, value: 'origin/master'], [$class: 'StringParameterValue', name: 'Host', value: it]]
-					}
+					}*/
 				}
 			}
 		}
