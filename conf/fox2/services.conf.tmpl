@@ -19,7 +19,7 @@ ErrorLog "logs/error_log"
                 ProxySet lbmethod=byrequests
         </Proxy>
 
-        <Proxy balancer://journey-explorer>
+        <Proxy balancer://journey>
                 Require all granted
                 ProxySet lbmethod=byrequests
         </Proxy>
@@ -57,8 +57,8 @@ ErrorLog "logs/error_log"
         ProxyPass /fox2/engine balancer://engine/fox2/engine
         ProxyPassReverse /fox2/engine balancer://engine/fox2/engine
 
-        ProxyPass /fox2/journey-explorer balancer://journey-explorer/fox2/journey-explorer
-        ProxyPassReverse /fox2/journey-explorer balancer://journey-explorer/fox2/journey-explorer
+        ProxyPass /journey balancer://journey/journey
+        ProxyPassReverse /journey balancer://journey/journey
 
         ProxyPass /fox2/explore balancer://explore/fox2/explore
         ProxyPassReverse /fox2/explore balancer://explore/fox2/explore

@@ -106,6 +106,20 @@ del () {
 }
 
 migrate () {
+    # Check to see if the current services.conf is version 4
+    count=$(cat ${CONFDIR}/fox2/services.conf | grep 'journey-explorer' | wc -l)
+    if [ $count -gt 0 ]; then
+        echo 
+	echo "Backing up the old services.conf to services.conf.OLD.pre-iris"
+        /bin/cp ${CONFDIR}/fox2/services.conf ${CONFDIR}/fox2/services.conf.OLD.pre-iris
+	echo 
+	echo "Updating fox2/journey-explorer to iris"
+
+	sed -i 's/fox2\/journey-explorer/iris/g' ${CONFDIR}/fox2/services.conf
+	sed -i 's/journey-explorer/iris/g' ${CONFDIR}/fox2/services.conf
+    fi
+
+	
     # Check to see if the current services.conf is version 2 or 3
     count=$(cat ${CONFDIR}/fox2/services.conf | grep "Proxy balancer" | wc -l)
     if [ $count -gt 0 ]; then
@@ -138,6 +152,7 @@ migrate () {
 	    add
         fi
     done < ${CONFDIR}/fox2/services.conf.OLD
+
 
     echo "Your services.conf has been upgraded."
 
