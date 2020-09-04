@@ -71,7 +71,7 @@ addNewService(){
     regex1="ProxyPass.*"
     regex2="</VirtualHost>.*"
     regex=$regex1
-    balancerLine="         <Proxy balancer://${service}>\n                BalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests failonstatus=503\n\t</Proxy>\n"
+    balancerLine="         <Proxy balancer://${service}>\n                BalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests failonstatus=503,500\n\t</Proxy>\n"
     proxyLine="        ProxyPass /fox2/${service} balancer://${service}/fox2/${service}\n        ProxyPassReverse /fox2/${service} balancer://${service}/fox2/${service}\n"
 
     IFS=''
@@ -122,7 +122,7 @@ migrate () {
     count=$(cat ${CONFDIR}/fox2/services.conf | grep 'failonstatus' | wc -l)
     if [ $count -eq 0 ]; then
     echo "FD-3857 Updating failonstatus on ProxySet"
-    sed -i 's/ProxySet lbmethod=byrequests/ProxySet lbmethod=byrequests failonstatus=503/g' ${CONFDIR}/fox2/services.conf
+    sed -i 's/ProxySet lbmethod=byrequests/ProxySet lbmethod=byrequests failonstatus=503,500/g' ${CONFDIR}/fox2/services.conf
     fi 
   
 	
