@@ -106,7 +106,7 @@ del () {
 }
 
 migrate () {
-    updated = false
+    updated=false
     # Check to see if the current services.conf is version 4
     count=$(cat ${CONFDIR}/fox2/services.conf | grep 'journey-explorer' | wc -l)
     if [ $count -gt 0 ]; then
@@ -134,7 +134,7 @@ migrate () {
     count=$(cat ${CONFDIR}/fox2/services.conf | grep "Proxy balancer" | wc -l)
     if [ $count -gt 0 ]; then
 
-        if [$updated=true]; then
+        if [ $updated=true ]; then
             echo "Your services.conf has been upgraded."
          else   
             echo "Your services.conf appears to be up-to-date.  If you wish to"
