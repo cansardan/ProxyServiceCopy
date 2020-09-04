@@ -71,7 +71,7 @@ addNewService(){
     regex1="ProxyPass.*"
     regex2="</VirtualHost>.*"
     regex=$regex1
-    balancerLine="         <Proxy balancer://${service}>\n                BalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests\n\t</Proxy>\n"
+    balancerLine="         <Proxy balancer://${service}>\n                BalancerMember http://${ip}:${port}\n                Require all granted\n                ProxySet lbmethod=byrequests failonstatus=503\n\t</Proxy>\n"
     proxyLine="        ProxyPass /fox2/${service} balancer://${service}/fox2/${service}\n        ProxyPassReverse /fox2/${service} balancer://${service}/fox2/${service}\n"
 
     IFS=''
@@ -119,6 +119,12 @@ migrate () {
 	sed -i 's/journey-explorer/iris/g' ${CONFDIR}/fox2/services.conf
     fi
 
+    count=$(cat ${CONFDIR}/fox2/services.conf | grep 'failonstatus' | wc -l)
+    if [ $count -eq 0 ]; then
+    echo "FD-3857 Updating failonstatus on ProxySet"
+    sed -i 's/ProxySet lbmethod=byrequests/ProxySet lbmethod=byrequests failonstatus=503/g' ${CONFDIR}/fox2/services.conf
+    fi 
+  
 	
     # Check to see if the current services.conf is version 2 or 3
     count=$(cat ${CONFDIR}/fox2/services.conf | grep "Proxy balancer" | wc -l)
