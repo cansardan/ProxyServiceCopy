@@ -106,6 +106,7 @@ del () {
 }
 
 migrate () {
+    updated = false
     # Check to see if the current services.conf is version 4
     count=$(cat ${CONFDIR}/fox2/services.conf | grep 'journey-explorer' | wc -l)
     if [ $count -gt 0 ]; then
@@ -117,23 +118,30 @@ migrate () {
 
 	sed -i 's/fox2\/journey-explorer/iris/g' ${CONFDIR}/fox2/services.conf
 	sed -i 's/journey-explorer/iris/g' ${CONFDIR}/fox2/services.conf
+    updated=true
     fi
 
+    #FD-3857 
     count=$(cat ${CONFDIR}/fox2/services.conf | grep 'failonstatus' | wc -l)
     if [ $count -eq 0 ]; then
-    echo "FD-3857 Updating failonstatus on ProxySet"
+    echo "Updating failonstatus on ProxySet"
     sed -i 's/ProxySet lbmethod=byrequests/ProxySet lbmethod=byrequests failonstatus=503,500/g' ${CONFDIR}/fox2/services.conf
+    updated=true 
     fi 
   
 	
     # Check to see if the current services.conf is version 2 or 3
     count=$(cat ${CONFDIR}/fox2/services.conf | grep "Proxy balancer" | wc -l)
     if [ $count -gt 0 ]; then
-        echo "Your services.conf appears to be up-to-date.  If you wish to"
-	echo "re-run the migration, rename the services.conf.OLD file back"
-	echo "to services.conf (in your ProxyService_conf/fox2 directory)"
-	echo "and then re-run this script with the migrate option."
 
+        if [$updated=true]; then
+            echo "Your services.conf has been upgraded."
+         else   
+            echo "Your services.conf appears to be up-to-date.  If you wish to"
+	        echo "re-run the migration, rename the services.conf.OLD file back"
+	        echo "to services.conf (in your ProxyService_conf/fox2 directory)"
+	        echo "and then re-run this script with the migrate option."
+        fi  
         # FD-2655 - Remove any trailing /'s from ProxyPass and ReverseProxyPass
 	#           (There should be NO trailing slashes in this file.)
         mv ${CONFFILE} $savedconf
