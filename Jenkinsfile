@@ -18,7 +18,11 @@ pipeline {
 		VERSION = sh(returnStdout: true, script: "grep '\"version\":' version.json | awk '{print \$NF}' | sed 's/[\",]//g'").trim()
 	}
 	agent {
-		label 'docker-builder'
+		node {
+		   label 'docker-builder'
+		   customWorkspace '/home/ubuntu/jam/docker-builder/workspace'
+		}
+
 	}
 	stages {
 		// If the branch is not master, perform certain cleanup tasks
